@@ -1,0 +1,500 @@
+## 基础
+
+### 1.[斐波那契数列](https://leetcode-cn.com/problems/fibonacci-number/)
+
+```c++
+class Solution {
+public:
+	int fib(int N) {
+		if (N <= 1) return N;
+		vector<int> dp(N + 1);
+		dp[0] = 0;
+		dp[1] = 1;
+		for (int i = 2; i <= N; i++) {
+			dp[i] = dp[i - 1] + dp[i - 2];
+		}
+		return dp[N];
+	}
+};
+时间复杂度： O(n)
+空间复杂度： O(n)
+```
+
+### 2.[爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)
+
+```c++
+class Solution {
+public:
+    //f[i]： 爬到第i层楼梯，有dp[i]种⽅法
+    int climbStairs(int n) {
+        if(n <= 1) return n;//防⽌空指针 下⾯直接对dp[2]操作
+        vector<int> f(n + 1);
+		f[1] = 1, f[2] = 2;//f[0]不好说通， 
+        //只初始化f[1] = 1， f[2] = 2，然后从i = 3开始递推，符合dp[i]的定义
+        for(int i = 3; i <= n; i ++)
+            f[i] = f[i - 1] + f[i - 2];
+        return f[n];
+    }
+};
+时间复杂度： O(n)
+空间复杂度： O(n)
+```
+
+```c++
+class Solution {
+public:
+    //dp[i]：爬到有i个台阶的楼顶，有dp[i]种⽅法。 完全背包问题 
+    int climbStairs(int n) {
+        vector<int> f(n + 1);
+        f[0] = 1;//排列数
+        for(int j = 1; j <= n; j ++){// 遍历背包
+            for(int i = 1; i <= 2; i ++){// 遍历物品
+                if(j - i >= 0) 
+                    f[j] += f[j - i];
+        }            
+        return f[n];
+    }
+};
+```
+
+
+
+### 3.[使⽤最⼩花费爬楼梯](https://leetcode-cn.com/problems/min-cost-climbing-stairs/)  
+
+```c++
+class Solution {
+public:
+    //dp[i]的定义：到达第i个台阶所花费的最少体⼒为dp[i]。
+    //（注意这⾥认为是第⼀步⼀定是要花费）
+    int minCostClimbingStairs(vector<int>& cost) {
+        vector<int> dp(cost.size() + 1);
+        dp[0] = cost[0]，dp[1] = cost[1];//由递推公式，最终都是dp[0]dp[1]
+        for(int i = 2; i < cost.size(); i ++){
+            dp[i] = min(dp[i - 1], dp[i - 2]) + cost[i];
+        }
+        //最后⼀步可以理解为不⽤花费，所以取倒数第⼀步，第⼆步的最少值
+		return min(dp[cost.size() - 1], dp[cost.size() - 2]);
+    }
+};
+时间复杂度： O(n)
+空间复杂度： O(n)
+```
+
+```c++
+要不是第⼀步不需要花费体⼒，要不就是第最后⼀步不需要花费体⼒
+class Solution {
+public:
+	int minCostClimbingStairs(vector<int>& cost) {
+		vector<int> dp(cost.size() + 1);
+		dp[0] = 0; // 默认第⼀步都是不花费体⼒的
+		dp[1] = 0;
+		for (int i = 2; i <= cost.size(); i++) {
+            //两个途径得到dp[i]
+			dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2]);
+		}
+		return dp[cost.size()];
+	}
+};
+```
+
+### 4.[不同路径](https://leetcode-cn.com/problems/unique-paths/)
+
+```c++
+class Solution {
+public:
+    //dp[i][j] ：表示从（0 ，0）出发，到(i, j) 有dp[i][j]条不同的路径。
+    int uniquePaths(int m, int n) {
+        vector<vector<int>> dp(m+1, vector<int>(n+1,0));
+        //先dp[i][0]⼀定都是1，因为从(0, 0)的位置到(i, 0)的路径只有⼀条，dp[0][j]同理
+        for(int i = 0; i < m; i++) dp[i][0] = 1;
+        for(int j = 0; j < n; j++) dp[0][j] = 1;
+        
+        for(int i = 1; i < m; i ++)
+            for(int j = 1; j < n; j ++)
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];//dp[i][j]只有这两个⽅向过来
+        return dp[m - 1][n - 1];
+    }
+};
+时间复杂度：O(m * n)
+空间复杂度：O(m * n)
+```
+
+```c++
+class Solution {
+public:
+ 	int uniquePaths(int m, int n) {
+        vector<int> dp(n);
+         for (int i = 0; i < n; i++) dp[i] = 1;
+         for (int j = 1; j < m; j++) {
+            for (int i = 1; i < n; i++) {
+                dp[i] += dp[i - 1];//方法个数
+            }
+         }
+         return dp[n - 1];
+ 	}
+};
+时间复杂度：O(m * n)
+空间复杂度：O(n)
+```
+
+### 5.[**不同路径** **II**](https://leetcode-cn.com/problems/unique-paths-ii/)
+
+```c++
+class Solution {
+public:
+    //dp[i][j] ：表示从（0 ，0）出发，到(i, j) 有dp[i][j]条不同的路径。
+    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+        int m = obstacleGrid.size(), n = obstacleGrid[0].size();
+        vector<vector<int>> dp(m, vector<int>(n, 0));
+       
+        for(int i = 0 ; i < m && obstacleGrid[i][0] == 0; i ++) dp[i][0] = 1;
+        for(int j = 0 ; j < n && obstacleGrid[0][j] == 0; j ++) dp[0][j] = 1;
+
+        for(int i = 1; i < m; i ++)
+            for(int j = 1; j < n; j ++){
+                if(!obstacleGrid[i][j])// 当(i, j)没有障碍(0)的时候，再推导dp[i][j]
+                    dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        return dp[m - 1][n - 1];
+    }
+};
+时间复杂度O(n * m) n m 分别为obstacleGrid ⻓度和宽度 
+空间复杂度O(n * m)
+```
+
+### 6:[**整数拆分**](https://leetcode-cn.com/problems/integer-break/)
+
+```c++
+class Solution {
+public:
+	//dp[i]：分拆数字i，可以得到的最⼤乘积为dp[i]。
+    int integerBreak(int n) {
+        if(n <= 1) return n;
+        vector<int>f(n+1);
+        f[2] = 1;//dp[0] dp[1] 就不应该初始化，没有意义的数值
+        for(int i = 3; i <= n; i ++)
+            for(int j = 1; j < i - 1; j ++){
+//两种渠道得dp[i]:⼀个是j * (i - j) 直接相乘,⼀个是j * dp[i - j]，相当于是拆分(i - j)
+                f[i] = max(f[i], max(f[i - j] * j, (i - j) * j));
+            }
+        return f[n];
+    }
+};
+```
+
+7:[**不同的⼆叉搜索树**](https://leetcode-cn.com/problems/unique-binary-search-trees/)
+
+```c++
+class Solution {
+public:
+    int numTrees(int n) {
+        vector<int> dp(n + 1);
+        //dp[i]：1到i为节点组成的⼆叉搜索树的个数为dp[i]。
+        dp[0] = 1;//0是有意义的  计数 空节点也是⼀颗⼆叉树，
+
+        for(int i = 1; i <= n; i ++)
+            for(int j = 1; j <= i; j ++){//子树
+		//dp[i] += dp[以j为头结点左⼦树节点数量] * dp[以j为头结点右⼦树节点数量]
+                dp[i] += dp[i - j] * dp[j - 1];
+            }
+        return dp[n];
+    }
+};
+```
+
+## **01****背包理论基础**
+
+```c++
+//dp[i][j] 表示从下标为[0-i]的物品⾥任意取，放进容量为j的背包，价值总和最⼤是多少
+/*
+递推式：
+由dp[i - 1][j]推出，即背包容量为j，⾥⾯不放物品i的最⼤价值，此时dp[i][j]就是dp[i - 1][j]
+由dp[i - 1][j - weight[i]]推出，dp[i - 1][j - weight[i]] 为背包容量为j - weight[i]的时候不放物品i的最⼤价值，那么dp[i - 1][j - weight[i]] + value[i] （物品i的价值），就是背包放物品i得到的最⼤价值
+初始化：
+背包容量j为0的话，即dp[i][0]，⽆论是选取哪些物品，背包价值总和⼀定为0
+物品i为0，存放编号0的物品的时候，各个容量的背包所能存放的最⼤价值
+当 j < weight[0]的时候，dp[0][j] 应该是 0，因为背包容量⽐编号0的物品重量还⼩。
+当j >= weight[0]是，dp[0][j] 应该是value[0]，因为背包容量放⾜够放编号0物品。
+
+其他下标应该初始化：都会被覆盖 不涉及比较
+*/
+int _01beg(int m, int n){//m件物品，n容量
+    vector<vector<int>> f(m + 1, vector<int>(n + 1, 0));   
+    for(int i = w[0]; i <= n; i++)
+        f[0][i] =   w[0];      
+    for(int i = 1; i < m; i ++)
+        for(int j = 0; j <= n; j++){
+            //if(j < v[i]) f[i][j] = f[i - 1][j];
+            //else f[i][j] = max(f[i-1][j], f[i - 1][j - v[i]] + w[i]);
+            if (j - weight[i] >= 0) {
+ 				dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);
+ 			}
+        }
+   
+    return f[m - 1][n];
+}
+```
+
+```c++
+//（滚动数组）
+	//dp[i][j] 表示从下标为[0-i]的物品⾥任意取，放进容量为j的背包，价值总和最⼤是多少。
+    //dp[j]为 容量为j的背包所背的最⼤价值
+	//dp[j]有两个选择，⼀个是取⾃⼰dp[j]，⼀个是取dp[j - weight[i]] + value[i](容量为j的背包，放⼊物品i了之后的价值即：dp[j])，指定是取最⼤的，毕竟是求最⼤价值，
+//////遍历背包容量放在上⼀层，那么每个dp[j]就只会放⼊⼀个物品，即：背包⾥只放⼊了⼀个物品。
+int _01beg(int m, int n){//m件物品，n中
+    vector<int> dp(n + 1, 0);
+    for(int i = 0; i < m; i ++)// 遍历物品
+//倒叙遍历是为了保证物品i只被放⼊⼀次！ 以从后往前循环，每次取得状态不会和之前取得状态重合
+        for(int j = n; j >= v[i]; j --){// 遍历背包容量
+            dp[j] = max(dp[j], dp[j - v[i]]+ w[i]);
+        }      
+    return dp[n];
+}
+```
+
+### 7.[**分割等和⼦集**](https://leetcode-cn.com/problems/partition-equal-subset-sum/)
+
+```c++
+class Solution {
+public:
+    bool canPartition(vector<int>& nums) {
+        int sum = 0;
+        for(auto x:nums)
+            sum += x;
+        if(sum & 1) return false;//数组不能分割成两个元素和相等的子集。
+        int m = nums.size(), n = sum / 2; 
+        // 题⽬中说：每个数组中的元素不会超过 100，数组的⼤⼩不会超过 200
+	   // 总和不会⼤于20000，背包最⼤只需要其中⼀半，所以10001⼤⼩就可以了
+        vector<int> f(10001, 0);
+		//f[i]表示 背包总容量是i，最⼤可以凑成i的⼦集总和为dp[i]。
+        for(int i = 0; i < m; i ++)
+            for(int j = n; j >= nums[i]; j --) // 每⼀个元素⼀定是不可重复放⼊
+                f[j] = max(f[j], f[j - nums[i]] + nums[i]);
+        //如果dp[i] == i 说明，集合中的⼦集总和正好可以凑成总和i
+        return f[n] == n ? true:false;
+    }
+};
+```
+
+### 8.[**最后⼀块⽯头的重量****II**](https://leetcode-cn.com/problems/last-stone-weight-ii/)
+
+```c++
+class Solution {
+public:
+//dp[i] 容量j的背包最多背dp[j]中的石头
+    int lastStoneWeightII(vector<int>& stones) {
+        int sum = 0;
+        for(auto x:stones)
+            sum += x;
+        int m = stones.size(), n = sum / 2;//向下取整 f[n]比sum-f[n]小
+        //1 <= stones.length <= 30，1 <= stones[i] <= 1000，所以最⼤重量就是30 * 1000
+        vector<int> f(15001, 0);
+        for(int i = 0; i < m; i++)// 遍历物品
+            for(int j = n; j >= stones[i]; j --)// 遍历背包
+                f[j] = max(f[j], f[j - stones[i]] +stones[i]);
+            	//dp[j - stones[i]]为 容量为j - stones[i]的背包最⼤所背重量
+        return sum - f[n] - f[n];
+    }
+};
+```
+
+### 9.[**⽬标和**](https://leetcode-cn.com/problems/target-sum/)
+
+```c++
+class Solution {
+public:
+//加法的和x加减法的和为sum   x-(sum - x) = traget -> x = (traget + sum)/2
+//装满容量为x背包，有⼏种⽅法 背包为0 一种方法
+    int findTargetSumWays(vector<int>& nums, int target) {
+        int sum = 0;
+        for(auto x:nums)
+            sum += x;
+        //减法和 sum - targe 一定是非负偶数
+        if(abs(target) > sum) return 0;
+        if(target + sum & 1) return 0;
+        int m = nums.size(), n = (target + sum) / 2;
+        
+        vector<int> f(n + 1, 0);
+        f[0] = 1;//背包为0 一种方法  不再是背包里面的价值或者元素和
+        for(int i = 0; i < m; i ++)
+            for(int j = n; j >= nums[i]; j --)
+                {
+                    f[j] += f[j - nums[i]];
+                }
+        return f[n];
+    }
+};
+```
+
+### 10.[**⼀和零**](https://leetcode-cn.com/problems/ones-and-zeroes/)
+
+```c++
+class Solution {
+public:
+//背包有两个维度，⼀个是m ⼀个是n，⽽不同⻓度的字符串就是不同⼤⼩的待装物品
+//dp[i][j]：最多有i个0和j个1(背包容量)的strs的最⼤⼦集的⼤⼩为dp[i][j]
+    int findMaxForm(vector<string>& strs, int m, int n) {
+        vector<vector<int>> f(m+1, vector<int>(n+1, 0));
+        //strs 统计一共几个1 几个0
+        for(string str:strs){//遍历每个字符串
+            int zeroNum = 0, oneNum = 0;//每个字符的占位数量 每个物品的重量
+            for(char x:str){
+                if(x == '0') zeroNum++;
+                else oneNum++;
+            }
+            //倒序 前⼀个strs⾥的字符串推导出来  二维数据
+            for(int i = m; i >= zeroNum; i--)// 遍历背包容量且从后向前遍历！
+                for(int j = n; j >= oneNum; j--){
+//dp[i][j] 可以由前⼀个strs⾥的字符串推导出来，strs⾥的字符串有zeroNum个0，oneNum个1
+                    f[i][j] = max(f[i][j], f[i - zeroNum][j -oneNum] + 1);
+                }
+        }
+        return f[m][n];
+    }
+};
+```
+
+## **完全背包理论基础**
+
+```c++
+for(int i = 0; i < weight.size(); i++) { // 遍历物品
+ 	for(int j = bagWeight; j >= weight[i]; j--) { // 遍历背包容量
+ 	//01背包内嵌的循环是从⼤到⼩遍历，为了保证每个物品仅被添加⼀次
+ 		dp[j] = max(dp[j], dp[j - weight[i]] + value[i]);
+ 	}
+}
+/*
+01背包中⼆维dp数组的两个for遍历的先后循序是可以颠倒了，⼀位dp数组的两个for循环先后循序⼀定是先遍历物品，再遍历背包容量。
+在完全背包中，对于⼀维dp数组来说，其实两个for循环嵌套顺序同样⽆所谓！只要保证下标j之前的dp[j]都是经过计算
+*/
+// 先遍历物品，再遍历背包
+for(int i = 0; i < weight.size(); i++) { // 遍历物品
+    //完全背包的物品是可以添加多次的，所以要从⼩到⼤去遍历
+     for(int j = weight[i]; j < bagWeight ; j++) { // 遍历背包容量
+ 		dp[j] = max(dp[j], dp[j - weight[i]] + value[i]);
+ 	}
+}
+```
+
+```c++
+void bag(int m, int n){
+    vector<int> f(n + 1, 0);
+
+    for(int i = 0; i < m; i ++) // 遍历物品
+        for(int j = v[i]; j <= n; j ++)// 遍历背包容量
+            f[j] = max(f[j], f[j - v[i]] + w[i]);
+    cout << f[n] << endl;
+}
+```
+
+### 11.[**零钱兑换** **II**](https://leetcode-cn.com/problems/coin-change-2/)
+
+```c++
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        //纯完全背包是能否凑成总⾦额，⽽本题是要求凑成总⾦额的个数！
+        //dp[j]：凑成总⾦额j的货币组合数为dp[j]
+        vector<int> f(amount + 1, 0);
+        f[0] = 1;//凑成总⾦额0的货币 组合数 为1  方案 计数
+        for(int i = 0; i < coins.size(); i ++){// 遍历物品
+            for(int j = coins[i]; j <= amount; j ++)// 遍历背包
+//dp[j] （考虑coins[i]的组合总和） 就是所有的dp[j - coins[i]]（不考虑coins[i]）相加。
+                f[j] += f[j - coins[i]];
+        }
+        return f[amount];
+    }
+};
+/*
+如果求组合数就是外层for循环遍历物品，内层for遍历背包。
+如果求排列数就是外层for遍历背包，内层for循环遍历物品。
+*/
+```
+
+### 12.[**组合总和** **Ⅳ**](https://leetcode-cn.com/problems/combination-sum-iv/)
+
+```c++
+class Solution {
+public:
+    //dp[i]: 凑成⽬标正整数为i的排列个数为dp[i]
+    int combinationSum4(vector<int>& nums, int target) {
+        vector<int> f(target + 1, 0);
+        //给定⽬标值是正整数！ 所以dp[0] = 1是没有意义的，仅仅是为了推导递推公式
+        f[0] = 1; //排列数
+        for(int j = 1; j <= target; j ++){// 遍历背包
+            for(int i = 0; i < nums.size(); i ++)// 遍历物品
+                if(j - nums[i] >= 0 && f[j] < INT_MAX - f[j - nums[i]]) 
+                    f[j] += f[j - nums[i]];
+        }
+  //C++测试⽤例有超过两个树相加超过int的数据，所以需要在if⾥加上dp[i] < INT_MAX - dp[i - num]。          
+        return f[target];
+    }
+};
+```
+
+### 13.[**零钱兑换**](https://leetcode-cn.com/problems/coin-change/)
+
+```c++
+class Solution {
+public:
+//f[i] 凑足i（背包容量）所需的最少硬币个数
+    int coinChange(vector<int>& coins, int amount) {
+//dp[j]必须初始化为⼀个最⼤的数，否则会在min(dp[j - coins[i]] + 1, dp[j])⽐较的过程中被初始值覆盖。
+        vector<int>f(amount+1, INT_MAX);
+        f[0] = 0;//凑⾜总⾦额为0所需钱币的个数⼀定是0，
+        //求钱币最⼩个数，那么钱币有顺序和没有顺序都可以，都不影响钱币的最⼩个数
+        for(int i = 0; i < coins.size(); i ++){// 遍历物品
+            for(int j = coins[i]; j <= amount; j ++)  // 遍历背包
+                f[j] = min(f[j], f[j - coins[i]] +1);
+        }         
+        if(f[amount] == INT_MAX) return -1;
+        return f[amount];
+    }
+};
+```
+
+### 14.[**完全平⽅数**](https://leetcode-cn.com/problems/perfect-squares/)
+
+```c++
+class Solution {
+public:
+    int numSquares(int n) {
+        //⾮0下标的dp[i]⼀定要初始为最⼤值，这样dp[j]在递推的时候才不会被初始值覆盖
+        vector<int>f(n+1, INT_MAX);
+        f[0] = 0;
+        //dp[i]：和为i的完全平⽅数 的最少数量为dp[i]
+        for(int i = 1; i * i <= n; i ++){ // 遍历物品
+            for(int j = 1;  j <= n; j ++) // 遍历背包
+                if(j >= i * i )
+         //dp[j] 可以由dp[j - i * i]推出， dp[j - i * i] + 1 便可以凑成dp[j]
+                    f[j] = min(f[j], f[j - i * i] + 1);
+        }   
+        return f[n];
+    }
+};
+```
+
+### 15.[**单词拆分**](https://leetcode-cn.com/problems/word-break/)
+
+```c++
+class Solution {
+public:
+    //dp[i] : 字符串⻓度为i的话，dp[i]为true，表示可以拆分为⼀个或多个在字典中出现的单词
+    bool wordBreak(string s, vector<string>& wordDict) {
+        vector<bool> f(s.size() + 1, false);
+        f[0] = true;//为了推导公式。
+        unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+        //分割⼦串的特殊性，遍历背包放在外循环,更⽅便
+        for(int i = 1; i <= s.size(); i ++)// 遍历背包
+            for(int j = 0; j < i; j ++){
+                string word = s.substr(j, i - j);
+   //确定dp[j] 是true，且 [j, i] 这个区间的⼦串出现在字典⾥，那么dp[i]⼀定是true
+                if(wordSet.find(word) != wordSet.end() && f[j])
+                    f[i] = true;
+            }
+        return f[s.size()];
+    }
+};
+```
+
+## **多重背包理论基础**
